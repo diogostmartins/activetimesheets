@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+
+  <!-- par: test dur in the element -->
+  <par>
+    <item select="#v1" />
+    <item select="#v2" dur="20s" />
+  </par>
+
+ 
+
+</timesheet>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet id="l1_circular" xmlns="http://www.w3.org/ns/SMIL">
+	<seq>
+	  <item select="#img1" dur="2s" />
+	  <item select="#img2" dur="2s" />
+	  <item select="img" dur="5s" />
+	  <timesheet src="timesheets/embed_external_l2_circular.xml" />
+	</seq>
+</timesheet>

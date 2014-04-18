@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- seq with explicit dur in continuous children -->
+  <seq>
+    <item select="#v1" dur="2s"/>
+    <item select="#v2" dur="3s" />
+    <item select="#v1" dur="4s" />
+    <item select="#v2" dur="5s" />
+  </seq>  
+
+</timesheet>

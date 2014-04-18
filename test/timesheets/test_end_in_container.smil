@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+
+  <!-- par: test end in the container -->
+  <par end="5s">
+    <item select="#v1"/>
+    <item select="#v2"/>
+  </par>
+
+
+  
+
+</timesheet>

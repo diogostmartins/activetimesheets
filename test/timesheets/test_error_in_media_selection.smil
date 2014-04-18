@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+
+  <par id="ct_2" dur="5s">
+    <item id="img_2" select="#img_5" />
+    <item id="img_1" select="#img4" />
+    <item id="img_3" select="#img_6" />
+  </par>
+  
+
+</timesheet>

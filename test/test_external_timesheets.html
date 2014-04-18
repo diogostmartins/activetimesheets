@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>SMIL Timesheets: atomic test cases depending on visual log inspection</title>
+	<link href="timesheets/test_external_timesheets.xml" rel="timesheet" type="application/smil+xml">
+	<script type="text/javascript" src="js/jquery.min.js" ></script>
+	<script type="text/javascript" src="js/mediafragments.js"></script>
+	<script type="text/javascript" src="../activetimesheets.js"></script>
+	<script type="text/javascript" src="js/simplelogger.js"></script>
+
+
+	<script type="text/javascript">
+		$(document).ready(function () {	
+			var pres = null;
+			var dom = null;
+			var logger = new Logger();
+
+			function run_test_cases() {
+				/**
+				* test cases that require scripting
+				*/
+				
+			}
+
+			$(ACTIVETIMESHEETS.engine).bind('presentation_ready', function () {
+				pres = ACTIVETIMESHEETS.engine.getPresentation();
+				dom = pres.getExternalDOM();
+				run_test_cases();
+
+				$('.play_pause').unbind('click');
+				$('.play_pause').click(function () {
+					if (pres.isIdle() || pres.isPaused())
+						pres.play();
+					else if (pres.isPlaying())
+						pres.pause();
+				});
+			});
+			logger.setMode('debug');
+			ACTIVETIMESHEETS.engine.start(logger);
+			$('video').each(function () {
+				this.volume = 0;
+			});
+		});
+	</script>
+	<style type="text/css">
+		video {
+			width: 200px;
+			opacity: 0;
+		}
+		img {
+			width: 100px;
+			opacity: 0.5;
+		}
+		div {
+			border: 1px solid black;
+			opacity: 0;
+		}
+		div ul li {
+			opacity: 0;
+		}
+		*[smil=active] {
+			opacity: 1;
+		}
+		*[smil=done] {
+			opacity: 0;
+		}
+		*[smil=idle] {
+			opacity: 0;
+		}
+		*[smil-link=active] {
+			cursor: pointer;
+			border: 3px solid red;
+		}
+		.click_target {
+			width: 100px;
+			height: 100px;
+			border: 1px solid blue;
+			opacity: 1;
+		}
+		</style>
+</head>
+
+<body>
+
+<button class="play_pause">play/pause</button>
+<button class="play_pause">stop</button>
+<video controls id="v1" src="media/queen_trim_1_micro.webm"></video>
+<video controls id="v2" src="media/queen_trim_2_micro.webm"></video>
+<video controls id="v3">
+	<source src="media/queen_trim_1.webm" type="video/webm" />
+</video>
+<video controls id="v4" src="media/queen_trim_2.webm"></video>
+<audio id="au1" controls src="media/tahi.mp3"></audio>
+
+<img id="img1" src="media/session-1_slide-1.png"></img>
+<img id="img2" src="media/session-1_slide-2.png"></img>
+<img id="img3" src="media/session-1_slide-3.png"></img>
+<img id="img4" src="media/session-1_slide-4.png"></img>
+<img id="img5" src="media/session-1_slide-5.png"></img>
+<img id="img6" src="media/session-1_slide-6.png"></img>
+
+<div id="composite1" class="composite">
+	<ul>
+		<li class="atom">a</li>
+		<li class="atom">b</li>
+		<li class="atom">c</li>
+		<li class="atom">d</li>
+	</ul>
+</div>
+
+<ul>
+	<li id="acs_1">activate source 1</li>
+	<li id="acs_2">activate source 2</li>
+	<li id="acs_3">activate source 3</li>
+</ul>
+
+<div id="composite1" class="composite">
+	<ul>
+		<li class="atom">e</li>
+		<li class="atom">f</li>
+		<li class="atom">g</li>
+		<li class="atom">h</li>
+	</ul>
+</div>
+
+<!-- a link to a SMIL DOM node -->
+<a href="#id=a1">
+	<div class="click_target"></div>
+</a>
+
+<!-- a link to a HTML DOM node -->
+<!-- temporal behavior only if there is a direct timegraph node -->
+<a href="#v4">
+	<div class="click_target"></div>
+</a>
+
+</body>
+</html>

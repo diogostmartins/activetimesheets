@@ -1,0 +1,81 @@
+<html>
+<head>
+	<title>Unit tests for SMIL scheduling (external timesheets)</title>
+	<link href="timesheets/test_basic_seq_behavior.smil" rel="timesheet" type="application/smil+xml">
+	<script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/static/js/util.js"></script>
+	<script type="text/javascript" src="/static/js/smiltimesheets.js"></script>
+	<!--script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.10.0.js"></script>
+	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/qunit/qunit-1.10.0.css"-->
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var t_list = null;
+			var current_timesheet = null;
+			var include = 'link[rel=timesheet]';
+			var i = 0;
+
+			$(document).bind('smil_ready', function () {
+				console.log(current_timesheet, JSON.stringify(SMIL_TIMESHEETS.engine.timegraph2JSON()));
+
+				// if (i < t_list.length) {
+				// 	current_timesheet = t_list[i++];
+				// 	$(include).attr('href', 'timesheets/' + current_timesheet);
+				// 	SMIL_TIMESHEETS.engine.start();
+				// 	console.log(i);
+				// }
+
+			});
+
+			$.get('/gen_timesheets_testcase_list', function (data) {
+				t_list = data['timesheets'];
+
+				if (t_list.length > 0) {
+					current_timesheet = t_list[i++];
+					$(include).attr('href', 'timesheets/' + current_timesheet);
+					SMIL_TIMESHEETS.engine.start();
+				}
+
+			}, 'json').error(function (jqXHR, textStatus, errorThrown) {
+				console.error('could not load list of test cases: %1'
+					.replace('%1', errorThrown));
+			});
+
+
+			 
+
+		});
+	</script>
+	<style type="text/css">
+		video {
+			width: 400px;
+			opacity: 0;
+		}
+		img {
+			width: 200px;
+			opacity: 0;
+		}
+		*[smil=active] {
+			opacity: 1;
+		}
+		*[smil=done] {
+			opacity: 0;
+		}
+	</style>
+</head>
+
+<body>
+
+<video id="v1" src="media/queen_trim_1_micro.webm"></video>
+<video id="v2" src="media/queen_trim_2_micro.webm"></video>
+
+<img id="img1" src="media/session-1_slide-1.png"></img>
+<img id="img2" src="media/session-1_slide-2.png"></img>
+<img id="img3" src="media/session-1_slide-3.png"></img>
+<img id="img4" src="media/session-1_slide-4.png"></img>
+<img id="img5" src="media/session-1_slide-5.png"></img>
+<img id="img6" src="media/session-1_slide-6.png"></img>
+
+
+</body>
+</html>

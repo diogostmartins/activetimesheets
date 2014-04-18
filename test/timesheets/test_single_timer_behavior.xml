@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet id="root" xmlns="http://www.w3.org/ns/SMIL">
+	<!-- baseline: paralel videos -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- second video with assigned speed -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2" speed="2" />
+	</par-->
+
+	<!-- both elements with the same assigned speed -->
+	<!--par>
+		<item id="v1" select="#v1" speed="2" />
+		<item id="v2" select="#v2" speed="2" />
+	</par-->
+
+	<!-- both elements in a very fast speed -->
+	<!--par>
+		<item id="v1" select="#v1" speed="10" />
+		<item id="v2" select="#v2" speed="10" />
+	</par-->
+
+	<!-- both elements in a very slow speed -->
+	<!--par>
+		<item id="v1" select="#v1" speed=".1" />
+		<item id="v2" select="#v2" speed=".1" />
+	</par-->
+
+	<!-- one fast element and one slow element -->
+	<!--par>
+		<item id="v1" select="#v1" speed=".5" />
+		<item id="v2" select="#v2" speed="10" />
+	</par-->
+
+	<!-- speed in the time container -->
+	<!--par speed="2">
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2" />
+	</par-->
+
+	<!-- cascaded speed: two levels: 1 -->
+	<!--par speed="2">
+		<par speed="3">
+			<item id="v1" select="#v1" />
+			<item id="v2" select="#v2" />
+		</par>
+	</par-->
+
+	<!-- cascaded speed: two levels: 2 -->
+	<!--par speed="2">
+		<item id="v2" select="#v2" />
+		<par speed="3">
+			<item id="v1" select="#v1" />
+		</par>
+	</par-->
+
+	<!-- cascaded speed: two levels: 3 -->
+	<!--par speed="2">
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2" speed="3" />
+	</par-->
+
+	<!-- cascaded speed: three levels -->
+	<!--par speed="2">
+		<par speed="2">
+			<par speed="2">
+				<item id="v1" select="#v1" />
+				<item id="v2" select="#v2" />
+			</par>
+		</par>
+	</par-->
+
+	<!-- influence of speed on seq scheduling -->
+	<!--seq>
+		<item id="v2" select="#v2" speed="2"/>
+		<item id="v1" select="#v1" />
+	</seq-->
+
+	<!-- speed on seq container -->
+	<!--seq speed="2">
+		<item id="v2" select="#v2" />
+		<item id="v1" select="#v1" />
+	</seq-->
+
+	<!-- nested speed on seq  -->
+	<!--seq speed="2">
+		<item id="v2" select="#v2" speed="3"/>
+		<item id="v1" select="#v1" />
+	</seq-->
+
+	<!-- simple volume on media element -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2" volume=".5" />
+	</par-->
+
+	<!-- cascading volume  -->
+	<!--par volume=".5">
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2" volume=".5" />
+	</par-->
+
+	<!-- speed with begin explicit -->
+	<!--par>
+		<item begin="5" id="v1" select="#v1" />
+		<item begin="15" id="v2" select="#v2" speed="2" />
+	</par-->
+
+	<!-- speed with dur explicit -->
+	<!--par>
+		<item id="v1" select="#v1" dur="30" speed="3"/>
+		<item id="v2" select="#v2" dur="40" speed="2" />
+	</par-->
+
+	<!-- speed with end explicit end -->
+	<!--par>
+		<item id="v1" begin="10" select="#v1" end="30" speed="5" />
+		<item id="v2" begin="15" select="#v2" end="40" speed="2" />
+	</par-->
+
+	<!-- local to parent conversion with speed -->
+	<!--par>
+		<par begin="5">
+			<par begin="3">
+				<item id="v1" select="#v1" speed="5" />
+				<item id="v2" begin="15" select="#v2" speed="2" />
+			</par>
+		</par>
+	</par-->
+
+	<!-- test clip-begin with speed -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" clip-begin="10" select="#v2" speed="2" />
+	</par-->
+
+	<!-- test clip-end with speed -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" clip-end="20" select="#v2" speed="2" />
+	</par-->
+
+	<!-- test full clipping with speed -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" clip-begin="5" clip-end="20" clip-end="30" select="#v2" speed="2" />
+	</par-->
+
+	<!-- test clip end exceeding implicit duration -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" clip-begin="50" clip-end="70" select="#v2" speed="2" />
+	</par-->
+
+	<!-- test freezing behavior -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" clip-end="10"  end="50" select="#v2" speed="2" />
+	</par-->
+
+	<!-- clip-begin on time container -->
+	<!--par clip-begin="10">
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- clip-end on time container -->
+	<!--par clip-end="30">
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- clip-begin and clip-end on time container -->
+	<!--par clip-begin="10" clip-end="30" >
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- nested clip-begin: container and item -->
+	<!--par clip-begin="10">
+		<item id="v1" clip-begin="5" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- nested clip-begin: containers and item -->
+	<!--par clip-begin="10">
+		<par clip-begin="5">
+			<item id="v1" clip-begin="5" select="#v1" />
+			<item id="v2" select="#v2"/>
+		</par>
+	</par-->
+
+	<!-- clip-end precedence -->
+	<!--par clip-end="10">
+		<item id="v1" clip-end="20" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par-->
+
+	<!-- nested clip-begin and clip-end: containers and item -->
+	<!--par clip-begin="10" clip-end="40">
+		<par clip-begin="5" clip-end="30">
+			<item id="v1" clip-begin="5" clip-end="25" select="#v1" />
+			<item id="v2" select="#v2"/>
+		</par>
+	</par-->
+
+	<!-- clip-begin on external timesheet -->
+	<!--timesheet clip-begin="10" src="timesheets/embed_clipping.xml" /-->
+
+	<!-- clip-end on external timesheet -->
+	<!--timesheet clip-end="30" src="timesheets/embed_clipping.xml" /-->
+
+	<!-- clip-begin and clip-end on external timesheet -->
+	<!--timesheet clip-begin="10" clip-end="15" src="timesheets/embed_clipping.xml" /-->
+
+	<!-- begin|dur on external timesheets -->
+	<!--seq>
+		<timesheet dur="15" src="timesheets/embed_clipping.xml" />
+		<timesheet begin="10" src="timesheets/embed_clipping.xml" />
+	</seq-->
+
+	<!-- clip-begin on multiple external timesheets -->
+	<!--seq>
+		<timesheet clip-begin="10" src="timesheets/embed_clipping.xml" />
+		<timesheet clip-begin="20" src="timesheets/embed_clipping.xml" />
+	</seq-->
+
+	<!-- clip-begin/clip-end on multiple external timesheets -->
+	<!--seq>
+		<timesheet clip-begin="10" clip-end="20" src="timesheets/embed_clipping.xml" />
+		<timesheet clip-begin="20" clip-end="40" src="timesheets/embed_clipping.xml" />
+	</seq-->
+
+	<!-- import timesheet fragment -->
+	<!--timesheet id="v1" src="timesheets/embed_clipping.xml#v1" /-->
+
+	<!-- clipping on imported timesheet fragment -->
+	<!--timesheet id="v1" clip-begin="10" clip-end="20" src="timesheets/embed_clipping.xml#v1" /-->
+
+	<!-- clip-end/clip-begin on fragments of multiple external timesheets -->
+	<!--seq>
+		<timesheet clip-begin="10" clip-end="20" src="timesheets/embed_clipping.xml#v1" />
+		<timesheet clip-begin="20" clip-end="40" src="timesheets/embed_clipping.xml#v2" />
+		<timesheet clip-begin="15" clip-end="35" src="timesheets/embed_clipping.xml#v1" />
+	</seq-->
+
+	<!-- test event-based link playlist -->
+	<!-- should not work without actuate -->
+	<!--par>
+		<item id="v1" select="#v1">
+			<area id="start" begin="5" end="15" ></area>
+			<area begin="start.end" href="#f2" />
+			<area id="f2" begin="18" end="25"></area>
+			<area begin="f2.end" href="#f3" />
+			<area id="f3" begin="30" end="40"></area>
+			<area begin="f3.end" href="#start" />
+		</item>
+	</par-->
+
+	<!-- test event-based link playlist on container with loop -->
+	<!-- should not work without actuate -->
+	<!--par>
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+		
+		<area class="playlist" id="start" begin="5" end="15" ></area>
+		<area actuate="onload" begin="start.end" href="#f2" />
+		<area actuate="onload" id="f2" begin="18" end="25"></area>
+		<area actuate="onload" begin="f2.end" href="#f3" />
+		<area actuate="onload" id="f3" begin="30" end="40"></area>
+		<area actuate="onload" begin="f3.end" href="#start" />
+	</par-->
+
+	<!-- test link implicit dur -->
+	<!--item id="v1" select="#v1" >
+		<area begin="10" end="11" href="#f2" />
+		<area begin="20" end="21" href="#f3" />
+	</item-->
+
+	<!-- test actuate onload -->
+	<!--item id="v1" select="#v1" >
+		<area actuate="onload" begin="10" end="11" href="#a1" />
+		<area id="a1" begin="20" end="21" href="#f3" />
+	</item-->
+
+	<!-- test event-based link playlist -->
+	<!--par>
+		<item id="v1" select="#v1">
+			<area id="start" begin="5" end="15" ></area>
+			<area id="start_f2" actuate="onload" begin="start.end" end="start_f2.begin+1" href="#f2" />
+			<area id="f2" begin="18" end="25"></area>
+			<area id="f2_f3" actuate="onload" begin="f2.end" end="f2_f3.begin+1" href="#f3" />
+			<area id="f3" begin="30" end="40"></area>
+			<area id="f3_start" actuate="onload" begin="f3.end" end="f3_start.begin+1" href="#start" />
+		</item>
+	</par-->
+
+	<!-- test begin-end event resolution -->
+	<!--item id="v1" end="10" select="#v1" />
+	<item id="v2" begin="v1.end" end="v2.begin+10" select="#v2" /-->
+
+	<!-- test souceplaystate: shoul not trigger -->
+	<!--item id="v1" select="#v1" >
+		<area sourcePlayState="pause" begin="20" end="21" href="#f3" />
+	</item-->
+
+	<!-- test souceplaystate: pause -->
+	<!--item id="v1" select="#v1" >
+		<area actuate="onload" sourcePlayState="pause" begin="10" end="21" href="#f3" />
+	</item-->
+
+	<!-- test souceplaystate: stop -->
+	<!--item id="v1" select="#v1" >
+		<area actuate="onload" sourcePlayState="stop" begin="10" end="21" href="#f3" />
+	</item-->
+
+	<!-- test souceplaystate: play -->
+	<!--item id="v1" select="#v1" >
+		<area actuate="onload" sourcePlayState="play" begin="10" end="21" href="#f3" />
+	</item-->
+
+	<!-- simulate a loop with linking -->
+	<!--item id="v1" select="#v1" >
+		<area id="l1" begin="10" end="30" />
+		<area id="l2" actuate="onload" begin="l1.end" dur="1" href="#l1"/>
+	</item-->
+
+	<!-- simulate skip with linking -->
+	<item id="v1" select="#v1" >
+		<par dur="20">
+			<area id="l1" actuate="onload" begin="10" dur="1" href="#l2" />
+			<area id="l2" begin="30" dur="1" />
+		</par>
+	</item>
+</timesheet>

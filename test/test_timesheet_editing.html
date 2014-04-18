@@ -1,0 +1,294 @@
+<html>
+<head>
+	<title>SMIL Timesheets: atomic visual test cases</title>
+	<link href="test_timesheet_editing.smil" rel="timesheet" type="application/smil+xml">
+	<script type="text/javascript" src="/interactors-editor/static/frameworks/jquery/jquery.min.js" ></script>
+	<script type="text/javascript" src="/interactors-editor/static/js/util.js"></script>
+<script type="text/javascript" src="/interactors-editor/static/frameworks/mediafragments.js"></script>
+	<script type="text/javascript" src="/interactors-editor/static/js/smiltimesheets.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {	
+			var pres = null;
+			var dom = null;
+			var tm = null;
+			var logger = null;
+			var xml_s = new XMLSerializer();
+
+			function append_void_item() {
+				/**
+				* no effect on timegraph: no selector is specified
+				*/
+				var item = dom.createElement('item', {begin: 10, dur: 15});
+
+				logger.debug('TEST CASE: append void item');
+				logger.test(tm.append(item));
+				logger.test($(tm._dom_node).clone()[0]);
+				// logger.test("\n", xml_s.serializeToString(tm._dom_node));
+			}
+
+			function append_invalid_item () {
+				/*
+				* no effect on timegraph: element is invalid
+				*/
+				var item = dom.createElement('media', {begin: 10, dur: 15});
+
+				logger.debug('TEST CASE: append invalid item');
+				logger.test(tm.append(item));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function append_void_par_container () {
+				/**
+				* update the timegraph but have no effect
+				*/
+				var node = dom.createElement('par');
+
+				logger.debug('TEST CASE: append void par container');
+				logger.test(tm.append(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function append_par_container () {
+				/**
+				* update the timegraph with par with explicit dur.
+				* should affect the timing
+				*/
+				var node = dom.createElement('par', {begin: 5, dur: 50});
+
+				logger.debug('TEST CASE: append par container');
+				logger.test(tm.append(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			};
+
+			function append_unresolved_item() {
+				/**
+				* should affect the timing
+				*/
+				var node = dom.createElement('item', {
+					begin: 'img1.end', 
+					select: "#v2"});
+
+				logger.debug('TEST CASE: append unresolved item');
+				logger.test(tm.append(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function insert_before() {
+				var node = dom.createElement('item', {
+					begin: '10',
+					select: "#v2"});
+				var first = tm.first();
+
+				logger.debug('TEST CASE: insert element before');
+				logger.test(first.before(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function insert_after() {
+				var node = dom.createElement('item', {
+					begin: '20',
+					select: "#v1"});
+				var first = tm.first();
+
+				logger.debug('TEST CASE: insert element after');
+				logger.test(first.after(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function update_timing_attribute() {
+				var node = dom.createElement('item', {
+					begin: '30',
+					select: "#v1"});
+
+				tm.append(node);
+				logger.debug('TEST CASE: update timing attribute');
+				logger.test(node.setAttr('begin', 18));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+			
+			function add_timing_attribute() {
+				var node = dom.createElement('par', {
+					'begin': 22
+				});
+
+				tm.append(node);
+				logger.debug('TEST CASE: add timing attribute');
+				logger.test(node.setAttr('dur', 30));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function remove_timing_attribute() {
+				var node = dom.createElement('item', {
+					'begin': 13
+				});
+
+				tm.append(node);
+				logger.debug('TEST CASE: remove timing attribute');
+				logger.test(node.setAttr('begin', ''));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+			
+			function add_select_attribute() {
+				var node = dom.createElement('item', {
+					'begin': 13
+				});
+
+				tm.append(node);
+				logger.debug('TEST CASE: adding select attribute');
+				logger.test(node.setAttr('select', '#v3'));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function edit_select_attribute() {
+				var node = dom.createElement('item', {
+					begin: 13, 
+					select: '#v1'
+				});
+
+				tm.append(node);
+				logger.debug('TEST CASE: edit select attribute');
+				logger.test(node.setAttr('select', '#v3'));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function remove_select_attribute() {
+				var node = dom.createElement('item', {
+					begin: 13, 
+					select: '#v1'
+				});
+
+				tm.append(node);
+				logger.debug('TEST CASE: remove select attribute');
+				logger.test(node.setAttr('select', ''));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+			
+			function remove_node() {
+				var node = tm.find('#img1')[0];
+
+				logger.debug('TEST CASE: remove node');
+				logger.test(node.remove());
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function remove_attach_node() {
+				var node = tm.find('#img1')[0];
+
+				logger.debug('TEST CASE: remove-attach node');
+				logger.test(node.remove());
+				logger.test(tm.append(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function detach_node () {
+				var node = tm.find('#img1')[0];
+
+				logger.debug('TEST CASE: detach node');
+				logger.test(node.detach());
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function detach_atach_node() {
+				var node = tm.find('#img1')[0];
+
+				logger.debug('TEST CASE: detach-reatach node');
+				logger.test(node.detach());
+				logger.test(tm.append(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function add_link_composite() {
+				/**
+				* group links with a par and add to the dom
+				*/
+				var first = tm.first();
+				var node = dom.createElement('par');
+				var a1 = dom.createElement('area', {begin: 10, end: 15});
+				var a2 = dom.createElement('area', {begin: 20, end: 30});
+
+				logger.debug('TEST CASE: add link composite');
+				logger.test(node.append(a1));
+				logger.test(node.append(a2));
+				logger.test(first.before(node));
+				logger.test($(tm._dom_node).clone()[0]);
+			}
+
+			function run_test_cases() {
+				$(SMIL_TIMESHEETS.engine).bind('presentation_ready.testediting', 
+					function () {
+						pres = SMIL_TIMESHEETS.engine.getPresentation();
+						pres.play();
+						dom = pres.getExternalDOM();
+						tm = dom.getTimesheetElement();
+						logger = SMIL_TIMESHEETS.engine._getLogger();
+						logger.setMode('debug');
+						logger.test = function (args) {
+							console.debug("TEST DATA: ", args);
+						}
+						
+						// append_void_item();
+						// append_invalid_item();
+						// append_void_par_container();
+						// append_par_container();
+						// append_unresolved_item();
+						// insert_before();
+						// insert_after();
+						// update_timing_attribute();
+						// add_timing_attribute();
+						// remove_timing_attribute();
+						// add_select_attribute();
+						// edit_select_attribute();
+						// remove_select_attribute();
+						// remove_node();
+						// remove_attach_node();
+						// detach_node();
+						// detach_atach_node();
+						add_link_composite();
+					});
+				SMIL_TIMESHEETS.engine.start();
+			}
+
+			// startup
+			$('video').each(function () {
+				this.volume = 0;
+			});
+			run_test_cases();
+		});
+	</script>
+	<style type="text/css">
+		video {
+			width: 200px;
+			opacity: 0;
+		}
+		img {
+			width: 200px;
+			opacity: 0;
+		}
+		*[smil=active] {
+			opacity: 1;
+		}
+		*[smil=done] {
+			opacity: 0;
+		}
+	</style>
+</head>
+
+<body>
+
+
+<video id="v1" src="media/queen_trim_1_micro.webm"></video>
+<video id="v2" src="media/queen_trim_2_micro.webm"></video>
+<video controls id="v3" src="media/queen_trim_1.webm"></video>
+<video controls id="v4" src="media/queen_trim_2.webm"></video>
+
+<img id="img1" src="media/session-1_slide-1.png"></img>
+<img id="img2" src="media/session-1_slide-2.png"></img>
+<img id="img3" src="media/session-1_slide-3.png"></img>
+<img id="img4" src="media/session-1_slide-4.png"></img>
+<img id="img5" src="media/session-1_slide-5.png"></img>
+<img id="img6" src="media/session-1_slide-6.png"></img>
+
+
+</body>
+</html>

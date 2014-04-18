@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+  
+  <!-- various nested containers, simple begin, end, dur -->
+  <seq>
+    <item select="img" dur="1s" />
+    <par>
+      <item select="#img_5" dur="2s"/>
+    </par>
+    <par>
+      <item select="#v1" begin="5s" dur="3s" end="15s"/>
+      <item select="#v2" begin="7s" dur="6s" end="30s"/>
+    </par>
+  </seq>
+  <par>
+    <item select="video" dur="10s" />
+  </par>  
+
+</timesheet>

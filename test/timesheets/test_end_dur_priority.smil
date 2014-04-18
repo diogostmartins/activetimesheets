@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+
+  <!-- par: test end/dur priority -->
+  <!--par dur="10s" end="12s">
+    <item id="v_1" select="#v1" dur="3s" end="1s" />
+    <item select="#v2" dur="20s" end="50s" />
+  </par-->  
+
+
+  
+
+</timesheet>

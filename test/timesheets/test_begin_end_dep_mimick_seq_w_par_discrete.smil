@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- begin-end event dependency (mimicking seq behavior with discrete media) -->
+  <par>
+    <item id="i_1" select="#img1" dur="3s" />
+    <item id="i_2" select="#img2" dur="3s" begin="i_1.end" />
+    <item id="i_3" select="#img3" dur="3s" begin="i_2.end" />
+    <item id="i_4" select="#img4" dur="3s" begin="i_3.end" />
+    <item id="i_5" select="#img5" dur="3s" begin="i_4.end" />
+    <item id="i_6" select="#img6" dur="3s" begin="i_5.end" />
+  </par>
+
+
+  
+
+</timesheet>

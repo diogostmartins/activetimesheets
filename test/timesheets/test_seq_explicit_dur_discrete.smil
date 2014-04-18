@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- seq with explicit dur in discrete children -->
+  <seq>
+    <item select="#img1" dur="2s" />
+    <item select="#img2" dur="3s" />
+    <item select="#img3" dur="4s" />
+  </seq>
+
+</timesheet>

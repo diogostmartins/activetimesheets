@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- different time amounts (success)-->
+  <par>
+    <item select="#v1" dur="10ms"/>
+    <item select="#v1" dur="1s"/>
+    <item select="#v1" dur="1min"/>
+    <item select="#v1" dur="1h"/>
+    <item select="#v1" dur="1:1:1"/>
+    <item select="#v1" dur="1:1"/>
+    <item select="#v1" begin="v1.begin"/>
+    <item select="#v1" dur="101:59:59"/>
+  </par> 
+
+</timesheet>

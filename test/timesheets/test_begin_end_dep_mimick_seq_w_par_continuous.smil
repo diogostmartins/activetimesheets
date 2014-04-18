@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+
+  <!-- begin-end event dependency (mimicking seq behavior with continuous media) -->
+  <par id="ct_1">
+    <item id="v_1" select="#v1" />
+    <item id="v_2" select="#v2" begin="v_1.end" />
+    <item id="v_3" select="#v1" begin="v_2.end" />
+    <item id="v_4" select="#v2" begin="v_3.end" />
+    <item id="v_5" select="#v1" begin="v_4.end" />
+  </par>
+
+
+  
+
+</timesheet>

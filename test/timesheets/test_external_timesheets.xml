@@ -1,0 +1,845 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+<!-- test an empty timesheet (no content) -->
+
+<!-- multiple selected items  -->
+<!--seq>
+  <item select="#img1" dur="2s" />
+  <item select="#img2" dur="2s" />
+  <item select="img" dur="5s" />
+</seq-->
+
+  <!-- nested seqs, with continuous videos, with explicit dur -->
+  <!--seq>
+  	<item select="#v1" dur="10s"/>
+  	<item select="#v2" dur="20s"/>
+  	<seq>
+  		<item select="img" dur="5s"/>
+  	</seq>
+  </seq-->
+
+  <!-- nested seqs, with continuous videos, with implicit dur -->
+  <!--seq>
+    <item select="#v2" />
+    <item select="#v1" />
+    <seq>
+      <item select="img" dur="5s"/>
+    </seq>
+  </seq-->
+
+<!-- seq child with begin attribute -->
+<!--seq>
+  <item begin="10s" select="#v2" />
+  <item begin="5s" select="#v1" />
+  <seq>
+    <item select="img" begin="2s" dur="5s"/>
+  </seq>
+</seq-->
+
+<!-- seq child with undeterminate end -->
+<!-- should not resolve: child is inactive before event is resolved -->
+<!--par>
+  <item id="v1" end="5s" select="#v1" />
+  <seq>
+    <item select="#img1" dur="5s"/>
+    <item select="#img2" dur="5s" end="v1.end" />
+    <item select="#img3" dur="5s" />
+  </seq>
+</par-->
+
+<!-- time container with indefinite begin -->
+<!--par>
+  <item id="v1" end="10s" select="#v1" />
+  <item end="20s" select="#v2" />
+  <seq begin="v1.end">
+    <item select="#img1" dur="5s"/>
+    <item select="#img2" dur="5s" />
+    <item select="#img3" dur="5s" />
+  </seq>
+  <par begin="v1.end">
+    <item select="#img1" dur="5s"/>
+    <item select="#img2" dur="5s" />
+    <item select="#img3" dur="5s" />
+  </par>
+</par-->
+
+<!-- event ignored: resolved when parent is inactive -->
+<!--par>
+  <item id="v1" select="#v1" end="10s" />
+  <par begin="15s">
+    <item select="#v2" begin="v1.end" />
+  </par>
+</par-->
+
+<!-- event-based timing: should be resolved to the time of 
+immediate parent -->
+<!--par>
+  <item id="v1" select="#v1" end="10s" />
+  <par begin="5s">
+    <item select="#v2" begin="v1.end" />
+  </par>
+</par-->
+
+<!-- seq with event begin, explicit dur -->
+<!-- should ignore event, not allowed -->
+  <!--seq>
+    <item id="v1" select="#v1" dur="10s"/>
+    <item select="#v2" begin="v1.begin" dur="20s"/>
+    <seq>
+      <item select="#img1" dur="5s"/>
+    </seq>
+  </seq-->
+
+<!-- seq with event end before element is active: should not resolve -->
+  <!--seq>
+    <item id="v1" select="#v1" dur="10s"/>
+    <item id="v2" select="#v2" dur="10s"/>
+    <item select="#v1" end="v2.begin" dur="20s"/>
+    <seq>
+      <item select="img" dur="5s"/>
+    </seq>
+  </seq-->
+
+  <!-- nested pars -->
+  <!--par>
+  	<item select="#v1" dur="10s"/>
+  	<item select="#v2" dur="20s"/>
+    <par>
+      <item select="#img1" dur="30s"/>
+    </par>
+  </par-->
+  
+  <!-- event-based seq simulation via par -->
+  <!--par>
+  	<item id="v1" select="#v1" dur="10s"/>
+  	<item select="#v2" begin="v1.begin" dur="5s" />
+  	<item select="#img4" begin="v1.begin" dur="5s" />
+  </par-->
+  
+  <!-- various nested containers, simple begin, end, dur -->
+  <!--seq>
+    <item select="img" dur="1s" />
+    <par>
+      <item select="#img_5" dur="2s"/>
+    </par>
+    <par>
+      <item select="#v1" begin="5s" dur="3s" end="15s"/>
+      <item select="#v2" begin="7s" dur="6s" end="30s"/>
+    </par>
+  </seq>
+  <par>
+    <item select="video" dur="10s" />
+  </par-->
+
+  <!-- begin with events -->
+  <!--par>
+    <item id="v1" select="#v1" dur="10s"/>
+    <item id="v2" select="#v2" begin="v1.end" dur="21s" />
+    <item select="#img4" begin="v2.begin" dur="5s" />
+  </par-->
+
+  <!-- different time amounts (success)-->
+  <!--par>
+    <item select="#v1" dur="10ms"/>
+    <item select="#v1" dur="1s"/>
+    <item select="#v1" dur="1min"/>
+    <item select="#v1" dur="1h"/>
+    <item select="#v1" dur="1:1:1"/>
+    <item select="#v1" dur="1:1"/>
+    <item select="#v1" begin="v1.begin"/>
+    <item select="#v1" dur="101:59:59"/>
+  </par--> 
+
+  <!-- different time amounts (error)-->
+  <!--par>
+    <item select="#v1" dur="3g"/> 
+    <item select="#v1" begin="v5.begin"/>
+    <item select="#v1" dur="101:60:59"/>
+    <item select="#v1" dur="101:59:60"/>
+    <item select="#v1" dur=".begin"/>
+    <item select="#v1" dur="v5.begin"/>
+  </par-->  
+
+  <!-- begin and end lists (success) -->
+  <!--par begin="5s">
+    <item select="#v1" begin="10s"/>
+    <item select="#v2" end="15s"/>
+  </par-->
+
+  <!-- par: test begin in the container -->
+  <!--par begin="5s">
+    <item select="#v1"/>
+    <item select="#v2"/>
+  </par-->
+
+  <!-- seq: test begin in the container -->
+  <!--seq begin="5s">
+    <item select="#v1"/>
+    <item select="#v2"/>
+  </seq-->
+
+  <!-- nested containers with begin -->
+  <!--seq begin="5s">
+    <par begin="5s">
+      <seq begin="5s">
+        <seq begin="5s">
+          <par begin="5s">
+            <item select="#v1"/>
+            <item select="#v2"/>
+          </par>
+      </seq>
+    </seq>
+    </par>
+  </seq-->
+
+  <!-- par: test begin in the element -->
+  <!--par>
+    <item select="#v1" begin="10s" />
+    <item select="#v2" begin="15s" />
+  </par-->
+
+  <!-- par: test end in the container -->
+  <!--par end="3s">
+    <item select="#v1"/>
+    <item select="#v2"/>
+  </par-->
+
+  <!-- par: test end in the element -->
+  <!--par>
+    <item select="#v1" />
+    <item select="#v2" end="10s" />
+  </par-->
+
+  <!-- par: test dur in the container -->
+  <!--par dur="15s">
+    <item select="#v1" />
+    <item select="#v2"/>
+  </par-->
+
+  <!-- par: test dur in the element -->
+  <!--par>
+    <item select="#v1" />
+    <item select="#v2" dur="20s" />
+  </par-->
+
+  <!-- par: test end/dur priority -->
+  <!--par dur="10s" end="12s">
+    <item id="v_1" select="#v1" dur="3s" end="1s" />
+    <item select="#v2" dur="20s" end="50s" />
+  </par-->  
+
+  <!-- par: test event with positive timecount deltas -->
+  <!--par>
+    <item id="v1" select="#v1" />
+    <item select="#v2" begin="v1.end+20s" />
+  </par--> 
+
+<!-- seq: test event with positive timecount deltas -->
+  <!--seq>
+    <item id="v1" select="#v1" />
+    <item select="#v2" end="v1.end+20s" />
+  </seq--> 
+
+  <!-- test event with negative timecount deltas -->
+  <!--par>
+    <item id="v1" select="#v1" />
+    <item select="#v2" begin="v1.end-20s" />
+  </par--> 
+
+  <!-- test event with large positive timecount deltas --> 
+  <!--par>
+    <item id="v1" select="#v1" />
+    <item select="#v2" begin="v1.end+2h" />
+  </par--> 
+
+  <!-- begin-end event dependency (mimicking seq behavior with continuous media) -->
+  <!--par id="ct_1">
+    <item id="v_1" select="#v1" />
+    <item id="v_2" select="#v2" begin="v_1.end" />
+    <item id="v_3" select="#v1" begin="v_2.end" />
+    <item id="v_4" select="#v2" begin="v_3.end" />
+    <item id="v_5" select="#v1" begin="v_4.end" />
+  </par-->
+
+  <!-- begin-end event dependency (mimicking seq behavior with discrete media) -->
+  <!-- <par>
+    <item id="i_1" select="#img1" dur="3s" />
+    <item id="i_2" select="#img2" dur="3s" begin="i_1.end" />
+    <item id="i_3" select="#img3" dur="3s" begin="i_2.end" />
+    <item id="i_4" select="#img4" dur="3s" begin="i_3.end" />
+    <item id="i_5" select="#img5" dur="3s" begin="i_4.end" />
+    <item id="i_6" select="#img6" dur="3s" begin="i_5.end" />
+  </par> -->
+
+  <!-- begin-end event dependency (mimicking seq behavior with discrete and continous media) -->
+  <!-- <par>
+    <item id="v_1" select="#v1" />
+    <item id="i_1" select="#img1" dur="3s" begin="v_1.end" />
+    <item id="v_2" select="#v2" begin="i_1.end" />
+    <item id="i_2" select="#img2" dur="3s" begin="v_2.end" />
+    <item id="v_3" select="#v1" begin="i_2.end" />
+    <item id="i_3" select="#img3" dur="3s" begin="v_3.end" />
+    <item id="v_4" select="#v2" begin="i_3.end" />
+    <item id="i_4" select="#img4" dur="3s" begin="v_4.end" />
+    <item id="v_5" select="#v1" begin="i_4.end" />
+    <item id="i_5" select="#img5" dur="3s" begin="v_5.end" />
+    <item id="i_6" select="#img6" dur="3s" begin="i_5.end" />
+  </par>   -->
+
+  <!-- basic seq behavior -->
+  <!--seq>
+    <item select="#img1" dur="4s" />
+    <item select="#img2" dur="4s" />
+    <item select="#img3" dur="4s" />
+  </seq-->
+
+  <!-- seq with continuous media elements -->
+  <!--seq>
+    <item select="#v1" />
+    <item select="#v2" />
+    <item select="#v1" />
+    <item select="#v2" />
+  </seq-->
+
+  <!-- seq with implicit duration in children -->
+  <!--seq>
+    <item select="#img1"  />
+    <item select="#img2"  />
+    <item select="#img3"  />
+  </seq-->
+
+  <!-- seq with explicit dur in discrete children -->
+  <!--seq>
+    <item select="#img1" dur="2s" />
+    <item select="#img2" dur="3s" />
+    <item select="#img3" dur="4s" />
+  </seq-->
+
+  <!-- seq with explicit dur in continuous children -->
+  <!--seq>
+    <item select="#v1" dur="2s"/>
+    <item select="#v2" dur="3s" />
+    <item select="#v1" dur="4s" />
+    <item select="#v2" dur="5s" />
+  </seq-->
+
+  <!-- seq with begin in children -->
+  <!--seq>
+    <item select="#img1" begin= "2s" dur="4s" />
+    <item select="#img2" begin="2s" dur="4s" />
+    <item select="#img3" begin="2s" dur="4s" />
+  </seq-->
+
+  <!-- seq with item with indefinite begin - not allowed, should fall back -->
+  <!--seq>
+    <item id="v_1" select="#v1" />
+    <item select="#v2" begin="v_1.end" />
+    <item select="#v1" />
+    <item select="#v2" />
+  </seq-->
+  
+  <!-- seq with end in children -->
+  <!--seq>
+    <item id="v_1" select="#v1" />
+    <item select="#v2" end="1s" />
+    <item select="#v1" end="2s" />
+    <item select="#v2" end="3s" />
+  </seq-->
+
+  <!-- seq with indefinite end in children -->
+  <!--par>
+    <item select="#v1" id="v_1" dur="3s" />
+  </par>
+  <seq>
+    <item select="#v2" />    
+    <item select="#img1" dur="10s" end="v_1.end" />
+    <item select="#v1" />
+    <item select="#v2" />
+  </seq-->
+
+  <!-- test basic clip-begin and clip-end -->
+  <!--par>
+    <item select="#v3" clipBegin="10s" clipEnd="20s" dur="40s" />
+  </par-->
+
+  <!-- clip-begin isolated -->
+  <!--par>
+    <item select="#v3" clipBegin="15s" />
+  </par-->
+
+  <!-- clip-end isolated -->
+  <!--par>
+    <item select="#v3" clipEnd="15s" />
+  </par-->
+
+  <!-- excedingly large clip-begin -->
+  <!--par>
+    <item select="#v3" clipBegin="50s" />
+  </par-->
+
+  <!-- excedingly small clip-end -->
+  <!--par>
+    <item select="#v3" clipEnd="0s" />
+  </par-->
+
+  <!-- clip-end smaller than clip-begin -->
+  <!--par>
+    <item select="#v3" clipBegin="20s" clipEnd="10s" />
+  </par-->
+
+  <!-- par with multiple clips of the same media element -->
+  <!-- a conflict is expected, multiple elements trying to control the content -->
+  <!--par>
+    <item select="#v3" clipBegin="5s" clipEnd="20s" />
+    <item select="#v3" clipBegin="9s" clipEnd="14s" />
+    <item select="#v3" clipBegin="18s" clipEnd="25s" />
+    <item select="#v3" clipBegin="30s" clipEnd="40s" />
+  </par-->
+
+  <!-- seq with multiple clips of the same media element -->
+  <!--seq>
+    <item select="#v3" clipBegin="5s" clipEnd="20s" />
+    <item select="#v3" clipBegin="9s" clipEnd="14s" />
+    <item select="#v3" clipBegin="18s" clipEnd="25s" />
+    <item select="#v3" clipBegin="30s" clipEnd="40s" />
+  </seq-->
+
+  <!-- seq with multiple clips of different media elements -->
+  <!--seq>
+    <item select="#v3" clipBegin="5s" clipEnd="20s" />
+    <item select="#v4" clipBegin="9s" clipEnd="14s" />
+    <item select="#v3" clipBegin="18s" clipEnd="25s" />
+    <item select="#v4" clipBegin="30s" clipEnd="40s" />
+  </seq-->
+
+  <!-- multiple heterogeneous unresolved attributes in the same item -->
+  <!--par>
+    <item id="v1" begin="5s" select="#v1" />
+    <item id="v2" begin="10s" select="#v2" />
+    <item begin="v1.begin" end="v2.end" select="#v3" />
+  </par-->
+
+  <!-- multiple homogeneous unresolved attributes in the same item -->
+  <!--par>
+    <item id="v1" begin="5s" select="#v1" />
+    <item id="v2" begin="10s" select="#v2" />
+    <item begin="v1.begin" end="v2.begin" select="#v3" />
+  </par-->
+
+  <!-- multiple unresolved attributes dependent on the same element -->
+  <!--par>
+    <item id="v1" begin="5s" select="#v1" />
+    <item begin="v1.end" select="#v2" />
+    <item begin="v1.end" select="#v3" />
+    <item begin="v1.end" select="#v4" />
+  </par-->
+
+  <!-- semantically unresolved duplicate items with the same resolution -->
+  <!--par>
+    <item id="v1" begin="5s" select="#v1" />
+    <item begin="v1.end" select="#v2" />
+    <item begin="v1.end" select="#v2" />
+    <item begin="v1.begin" select="#v2" />
+  </par-->
+
+  <!-- click event on begin resolution -->
+  <!--par>
+    <item id="v1" select="#v1" dur="50"></item>
+    <item select="#v2" begin="v1.click"></item>
+  </par-->
+
+  <!-- click event on end resolution: par -->
+  <!--par>
+    <item id="v1" select="#v1" dur="50"></item>
+    <item select="#v2" dur="100" end="v1.click"></item>
+  </par-->
+
+  <!-- click event on end resolution: seq -->
+  <!--seq>
+    <item id="v1" select="#v1" dur="50"></item>
+    <item select="#v2" dur="100" end="v1.click"></item>
+    <item select="#img1" dur="30"></item>
+  </seq-->
+
+  <!-- test single selected target -->
+  <!--par>
+    <item select="#img1" begin="10" dur="5"/>
+    <item select="#img2" begin="10" dur="5"/>
+  </par-->
+
+  <!-- test multiple selected targets -->
+  <!--par>
+    <item select="img" begin="10" dur="5"/>
+  </par!-->
+
+  <!-- test single target with multiple nested -->
+  <!--par>
+    <item select="#composite1" dur="50">
+      <seq>
+        <item select=".atom" dur="5" />
+      </seq>
+    </item>
+  </par-->
+
+  <!-- test multiple targets with multiple nested -->
+  <!--par>
+    <item select=".composite" dur="30">
+      <seq>
+        <item select=".atom" dur="5" />
+      </seq>
+    </item>
+  </par-->
+
+  <!-- parsing: test basic link within single item -->
+  <!--item select="#v1">
+    <area begin="10" end="20"></area>
+  </item-->
+
+  <!-- parsing: test multiple links inside single target -->
+  <!--item select="#v1">
+    <area begin="10" end="20"></area>
+    <area begin="5" end="13"></area>
+    <area begin="8" end="11"></area>
+  </item-->
+
+  <!-- parsing: test basic link within multiple targets -->
+  <!--item select="video">
+    <area begin="10" end="20"></area>
+  </item-->
+
+  <!-- parsing: test multiple links within multiple targets -->
+  <!--item select="video">
+    <area begin="10" end="20"></area>
+    <area begin="5" end="13"></area>
+    <area begin="8" end="11"></area>
+  </item-->
+
+  <!-- parsing: test links in time containers -->
+  <!--par>
+    <area begin="3" end="40" />
+    <item select="#v3" />
+    <area id="a1" begin="10" end="15" />
+    <area begin="5" end="13" />
+  </par-->
+
+  <!-- test link implicit timing: no attributes -->
+  <!--item select="#v1">
+    <area />
+  </item-->
+
+  <!-- test link implicit timing: only begin attribute -->
+  <!--item select="#v1">
+    <area begin="2" />
+  </item-->
+
+  <!-- test link implicit timing: out of bounds begin attr -->
+  <!--item select="#v1">
+    <area begin="7" />
+  </item-->
+
+  <!-- test link implicit timing: inbound end -->
+  <!--item select="#v1">
+    <area end="3" />
+  </item-->
+
+  <!-- test link implicit timing: out of bounds end -->
+  <!--item select="#v1">
+    <area end="10" />
+  </item-->
+
+  <!-- link explicit timing: effects on time container -->
+  <!--par>
+    <item select="#v1">
+    </item>
+    <area end="15"></area>
+  </par-->
+
+  <!-- timing: activation of cm link on click -->
+  <!-- some other element should href to a1 -->
+  <!--item select="#v3">
+    <area id="a1" begin="10" end="20" />
+  </item-->
+
+  <!-- timing: activation of named element -->
+  <!-- some html dom element should href to v2 -->
+  <!--item select="#v1" id="v1" />
+  <item select="#v3" id="v2" begin="indefinite" /-->
+
+  <!-- test seek on par -->
+  <!--par>
+    <item select="#v1" />
+    <item select="#v2" />
+    <item select="#v3" />
+    <item select="#v4" />
+  </par-->
+
+  <!-- events cannot be resolved until parent is active  -->
+  <!--par>
+    <item id="v1" select="#v1" />
+    <par begin="10">
+      <item select="#img1" begin="v1.begin" dur="5" />
+      <item select="#img2" end="v1.end" dur="5" />
+    </par>
+  </par-->
+
+  <!-- event-based end cannot be resolved until element is active: 'end'  -->
+  <!-- par>
+    <item id="v1" select="#v1" />
+    <par>
+      <item select="#img1" begin="6" end="v1.end" />
+    </par>
+  </par -->
+
+  <!-- event-based end cannot be resolved until element is active: 'click'  -->
+  <!--par>
+    <item id="v1" select="#v1" />
+    <par>
+      <item select="#img1" begin="10" end="v1.click" />
+    </par>
+  </par-->
+
+  <!-- test link activation on flat par -->
+  <!-- activate third child before 15s -->
+  <!-- wait presentation stop, then activate third child -->
+  <!--par begin="5">
+    <item select="#img1" dur="10" />
+    <item select="#img2" begin="5" dur="10" />
+    <item select="#img3" begin="15" dur="30" />
+  </par-->
+
+  <!-- test link activation on nested par -->
+  <!--par begin="5">
+    <item select="#img1" dur="6s" />
+    <par begin="5">
+      <item select="#img2" dur="6s" />
+      <par begin="5">
+        <item select="#img3" dur="6s" />
+        <item select="#img4" begin="7s" dur="6s" />
+        <par begin="5">
+          <item select="#img5" dur="6s" />
+        </par>
+      </par>
+    </par>
+  </par-->
+
+  <!-- test link activation on flat seq -->
+  <!--seq>
+    <item select="#img1" dur="10s" />
+    <item select="#img2" dur="10s" />
+    <item select="#img3" dur="10s" />
+    <item select="#img4" dur="10s" />
+  </seq-->
+
+  <!-- test link activation on nested seq -->
+  <!--seq>
+    <item select="#img1" dur="10s" />
+    <seq>
+      <item select="#img3" dur="10s" />
+    </seq>
+    <item select="#img2" dur="10s" />
+  </seq-->
+
+  <!-- test link activation on flat par with continuous media -->
+  <!--par begin="5">
+    <item select="#v1" begin="10" />
+    <item select="#v2" begin="15" />
+    <item select="#v3" begin="20" />
+    <item select="#v4" begin="25" />
+  </par-->
+
+  <!-- test link activation on flat seq with continuous media -->
+  <!--seq begin="5">
+    <item select="#v1" />
+    <item select="#v2" />
+    <item id="v1" select="#v3" />
+    <item select="#v4" />
+  </seq-->
+
+  <!-- test link activation on nested pars with unresolved begin -->
+  <!--par begin="indefinite">
+    <par begin="indefinite">
+      <par begin="indefinite">
+        <item select="#img1" begin="5" dur="10"></item>
+        <item id="e1" select="#img2" begin="10" dur="10"></item>
+        <item select="#img3" begin="15" dur="10"></item>
+      </par>
+    </par>
+  </par-->
+
+  <!-- test link activation on nested seqs with unresolved begin -->
+  <!--seq begin="indefinite">
+    <item select="#img1" begin="5" dur="10"></item>
+    <seq begin="indefinite">
+      <item select="#img1" begin="5" dur="10"></item>
+      <seq begin="indefinite">
+        <item select="#img1" begin="5" dur="10"></item>
+        <item id="e1" select="#img2" begin="10" dur="10"></item>
+        <item select="#img3" begin="15" dur="10"></item>
+      </seq>
+    </seq>
+  </seq-->
+
+  <!-- test endEvent inhibition on link activation -->
+  <!--par begin="5">
+    <item select="#v3" dur="10" />
+    <item select="#v4" begin="20" />
+  </par-->
+
+  <!-- test embedded external timesheet -->
+  <!--timesheet src="timesheets/embed_external.xml" />
+  <item select="#v3" dur="10" />
+  <timesheet src="timesheets/embed_external.xml" />
+  <item select="#v1" dur="10" />
+  <timesheet src="timesheets/embed_external.xml" />
+  <item select="#v2" dur="10" />
+  <timesheet src="timesheets/embed_external.xml" /-->
+
+  <!-- test nested timesheets at multiple levels -->
+  <!--timesheet src="timesheets/embed_external_l1.xml" /-->
+
+  <!-- test circular timesheet embedding -->
+  <!--timesheet src="timesheets/embed_external_l1_circular.xml" /-->
+
+  <!-- timing attributes on nested timesheets -->
+  <!--par>
+    <item select="#v3" dur="10" />
+    <timesheet begin="10" dur="20">
+      <item select="#img1" begin="5" dur="10"></item>
+      <item select="#img1" begin="15" dur="30"></item>
+      <item select="#img1" begin="35" dur="40"></item>
+    </timesheet>
+  </par-->
+
+  <!-- clipping on par -->
+  <!--par clip-begin="25" clip-end="30">
+    <item select="#v3" />
+    <item select="#v4" />
+  </par-->
+
+  <!-- nested clipping on par -->
+  <!--par clip-begin="4" clip-end="25">
+    <item select="#v3" />
+    <par clip-begin="10" clip-end="20">
+      <item select="#v4" />
+    </par>
+  </par-->
+
+  <!-- test timing of audio file -->
+  <!--item select="#au1"></item-->
+
+  <!-- test composition with audio file -->
+  <!--seq>
+    <item select="#au1"></item>
+    <item select="#v1"></item>
+  </seq-->
+
+  <!-- test clipping on audio file -->
+  <!--seq>
+    <item clip-begin="10" clip-end="20" select="#au1"></item>
+    <item select="#v1"></item>
+  </seq-->
+
+  <!-- test par with endsync first -->
+  <!--par endsync="first">
+    <item select="#v1"></item>
+    <item select="#v2"></item>
+  </par-->
+
+  <!-- test par with endsync last -->
+  <!--par endsync="last">
+    <item select="#v1"></item>
+    <item select="#v2"></item>
+    <item select="#v3"></item>
+  </par-->
+
+  <!-- test par with endsync id-ed -->
+  <!--par endsync="v1">
+    <item id="v1" select="#v1"></item>
+    <item id="v2" select="#v2"></item>
+    <item id="v3" select="#v3"></item>
+  </par>
+
+  <par endsync="v4">
+    <item id="v3" select="#v1"></item>
+    <item id="v4" select="#v2"></item>
+    <item id="v5" select="#v3"></item>
+  </par>
+
+  <par endsync="v8">
+    <item id="v6" select="#v1"></item>
+    <item id="v7" select="#v2"></item>
+    <item id="v8" select="#v3"></item>
+  </par>
+
+  <par endsync="v12">
+    <item id="v9" select="#v1"></item>
+    <item id="v10" select="#v2"></item>
+    <item id="v11" select="#v3"></item>
+  </par-->
+
+  <!-- test excl container, empty with implicit dur -->
+  <!--excl>
+  </excl-->
+
+  <!-- test empty excl container with indefinite explicit dur -->
+  <!--excl dur="indefinite">
+  </excl-->
+
+  <!-- test excl container with a single element -->
+  <!--excl dur="indefinite">
+    <item select="#v1"></item>
+  </excl-->
+
+  <!-- test excl container with two elements -->
+  <!--excl dur="indefinite">
+    <item select="#v1"></item>
+    <item select="#v2"></item>
+  </excl-->
+
+  <!-- test excl container with two indefinite elements -->
+  <!--par>
+    <item id="v3" select="#v3"></item>
+    <excl dur="indefinite">
+      <item begin="v3.click" select="#v1"></item>
+      <item begin="indefinite" select="#v2"></item>
+    </excl>
+  </par-->
+
+  <!-- test excl container with two multiple indefinite elements -->  
+    <!--par>
+      <item id="acs_1" dur="indefinite" select="#acs_1" />
+      <item id="acs_2" dur="indefinite" select="#acs_2" />
+      <item id="acs_3" dur="indefinite" select="#acs_3" />
+      <excl dur="indefinite">
+        <item begin="acs_1.click" select="#v1"></item>
+        <item begin="acs_2.click" select="#v2"></item>
+        <item begin="acs_3.click" select="#v3"></item>
+      </excl>
+    </par-->
+
+    <!-- test excl container with scheduled children -->  
+    <!--excl dur="indefinite">
+      <item begin="5" select="#v1"></item>
+      <item begin="10" select="#v2"></item>
+      <item begin="20" select="#v3"></item>
+    </excl-->
+
+    <!-- test excl container with scheduled and unchesduled children -->  
+    <!--item id="acs_1" dur="indefinite" select="#acs_1" />
+    <excl dur="indefinite">
+      <item begin="acs_1.click" select="#v1"></item>
+      <item begin="10" select="#v2"></item>
+      <item begin="indefinite" select="#v3"></item>
+    </excl-->
+
+    <!-- test excl with activation conflicts -->  
+    <!-- <item id="acs_1" dur="indefinite" select="#acs_1" />
+    <excl dur="indefinite">
+      <item begin="acs_1.click" select="#v1"></item>
+      <item begin="acs_1.click" select="#v2"></item>
+      <item begin="acs_1.click" select="#v3"></item>
+    </excl> -->
+
+</timesheet>

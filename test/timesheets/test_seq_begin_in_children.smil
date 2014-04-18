@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- seq with begin in children -->
+  <seq>
+    <item select="#img1" begin= "2s" dur="4s" />
+    <item select="#img2" begin="2s" dur="4s" />
+    <item select="#img3" begin="2s" dur="4s" />
+  </seq>
+
+</timesheet>

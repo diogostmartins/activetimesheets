@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- begin with events -->
+  <par>
+    <item select="#v1" dur="10s"/>
+    <item select="#v2" begin="v1.end" dur="21s" />
+    <item select="#img4" begin="v2.begin" dur="5s" />
+  </par>
+
+</timesheet>

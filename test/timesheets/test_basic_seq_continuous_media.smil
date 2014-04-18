@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- seq with continuous media elements -->
+  <seq>
+    <item select="#v1" />
+    <item select="#v2" />
+    <item select="#v1" />
+    <item select="#v2" />
+  </seq>
+
+</timesheet>

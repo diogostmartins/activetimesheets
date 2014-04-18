@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- par: test begin in the element -->
+  <par>
+    <item select="#v1" begin="10s" />
+    <item select="#v2" begin="15s" />
+  </par>
+
+</timesheet>

@@ -1,0 +1,176 @@
+<html>
+<head>
+	<title>Unit tests for speed attributes with live editing</title>
+	<link href="timesheets/test_single_timer_behavior.xml" rel="timesheet" type="application/smil+xml">
+	<script src="/interactors-editor/static/frameworks/jquery/jquery.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/interactors-editor/static/js/util.js"></script>
+	<script type="text/javascript" src="/interactors-editor/static/frameworks/mediafragments.js"></script>
+	<script type="text/javascript" src="/interactors-editor/static/js/smiltimesheets.js"></script>
+	<!--script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.10.0.js"></script>
+	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/qunit/qunit-1.10.0.css"-->
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var logger = INTERACTORS.util.getLogger();
+
+			logger.setMode('debug');
+			$(SMIL_TIMESHEETS.engine).on('presentation_ready', function (ev) {
+				var p = SMIL_TIMESHEETS.engine.getPresentation();
+				var ts = p.getExternalDOM().getTimesheetElement();
+				var v1_node = ts.find('#v1')[0];
+				var v2_node = ts.find('#v2')[0];
+
+				if (v1_node !== undefined && v2_node !== undefined) {
+					var v1 = v1_node.getTimegraphNode();
+					var v2 = v2_node.getTimegraphNode();
+
+					setInterval(function () {
+						var err_1 = v1._target_node.currentTime - v1.getTime();
+						var err_2 = v2._target_node.currentTime - v2.getTime();
+
+						$('.time_v1').text(v1.getTime().toFixed(4));
+						$('.ptime_v1').text((v1._target_node.currentTime).toFixed(4));
+						$('.speed_v1').text(v1._speed);
+						$('.prate_v1').text(v1._target_node.playbackRate);
+						$('.error_v1').text(err_1.toFixed(4));
+						$('.volume_v1').text(v1._target_node.volume);
+
+						$('.time_v2').text(v2.getTime().toFixed(4));
+						$('.speed_v2').text(v2._speed);
+						$('.prate_v2').text(v2._target_node.playbackRate);
+						$('.ptime_v2').text((v2._target_node.currentTime).toFixed(4));
+						$('.error_v2').text(err_2.toFixed(4));
+						$('.volume_v2').text(v2._target_node.volume);
+
+						$('.ptime').text(p.getTime());
+						$('.ttime').text(p._timegraph.getTime());
+					}, 100);
+
+					$('.speed').bind('change', function () {
+						var speed = parseFloat(this.selectedOptions[0].value);
+
+						v2_node.setAttr('speed', speed);
+					});
+					$('.v_plus').click(function () {
+						var volume = parseFloat(v1_node.getAttr('volume'));
+
+						if (isNaN(volume)) {
+							volume = 2
+						} else {
+							volume += .1;
+						}
+						v1_node.setAttr('volume', volume);
+					});
+					$('.v_minus').click(function () {
+						var volume = parseFloat(v1_node.getAttr('volume'));
+
+						if (isNaN(volume)) {
+							volume = 1
+						} else {
+							volume -= .1;
+						}
+						v1_node.setAttr('volume', volume);
+					});
+				}
+				$('.pause').click(function () {
+					if (p.isPaused() || p.isIdle())
+						p.play();
+					else
+						p.pause();
+				});
+			});
+			
+			SMIL_TIMESHEETS.engine.start(logger);
+		});
+	</script>
+	<style type="text/css">
+		video {
+			width: 400px;
+			/*opacity: 0;*/
+		}
+		img {
+			width: 200px;
+			/*opacity: 0;*/
+		}
+		*[smil=active] {
+			/*opacity: 1;*/
+		}
+		*[smil=idle] {
+			/*opacity: 0;*/
+		}
+	</style>
+</head>
+
+<body>
+<table border="1">
+<tr>
+	<td>id</td>
+	<td>local time</td>
+	<td>speed</td>
+	<td>playback rate</td>
+	<td>target time</td>
+	<td>error element-content</td>
+	<td>target volume</td>
+</tr>
+
+<tr>
+	<td>v1</td>
+	<td><span class="time_v1"></span></td>
+	<td><span class="speed_v1"></span></td>
+	<td><span class="prate_v1"></span></td>
+	<td><span class="ptime_v1"></span></td>
+	<td><span class="error_v1"></span></td>
+	<td><span class="volume_v1"></span></td>
+</tr>
+<tr>
+	<td>v2</td>
+	<td><span class="time_v2"></span></td>
+	<td><span class="speed_v2"></span></td>
+	<td><span class="prate_v2"></span></td>
+	<td><span class="ptime_v2"></span></td>
+	<td><span class="error_v2"></span></td>
+	<td><span class="volume_v2"></span></td>
+</tr>
+
+</table>
+<p>Presentation time: <span class="ptime"></span> </p>
+<p>Timegraph time: <span class="ttime"></span> </p>
+
+<video id="v1" controls src="media/queen_trim_1.webm"></video>
+<video id="v2" controls src="media/queen_trim_2.webm"></video>
+
+<div>
+	<select class="speed">
+		<option value='0.5'>0.5x</option>
+        <option value='0.75'>0.75x</option>
+        <option value='1' selected>1.0x</option>
+        <option value='1.25'>1.25x</option>
+        <option value='1.5'>1.5x</option>
+        <option value='1.75'>1.75x</option>
+        <option value='2'>2.0x</option>
+        <option value='2.5'>2.5x</option>
+        <option value='3'>3.0x</option>
+	</select>
+	<button class="pause">pause/play</button>
+	<button class="v_plus">+v</button>
+	<button class="v_minus">-v</button>
+</div>
+
+<a href="#t=5">5s</a>&nbsp;
+<a href="#t=15">15s</a>&nbsp;
+<a href="#t=30">30s</a>&nbsp;
+<a href="#id=v1">#id=v1</a>&nbsp;
+<a href="#id=v1&t=15">#id=v1&t=15</a>&nbsp;
+<a href="#id=v2&t=20">#id=v2&t=20</a>&nbsp;
+<a href="#id=start">#id=start</a>&nbsp;
+
+<!-- <img id="img1" src="media/session-1_slide-1.png"></img>
+<img id="img2" src="media/session-1_slide-2.png"></img>
+<img id="img3" src="media/session-1_slide-3.png"></img>
+<img id="img4" src="media/session-1_slide-4.png"></img>
+<img id="img5" src="media/session-1_slide-5.png"></img>
+<img id="img6" src="media/session-1_slide-6.png"></img> -->
+
+
+</body>
+</html>

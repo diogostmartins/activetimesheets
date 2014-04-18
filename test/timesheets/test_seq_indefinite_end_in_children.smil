@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+
+  <!-- seq with indefinite end in children -->
+  <par>
+    <item select="#v1" id="v_1" dur="3s" />
+  </par>
+  <seq>
+    <item select="#v2" />    
+    <item select="#img1" dur="10s" end="v_1.end" />
+    <item select="#v1" />
+    <item select="#v2" />
+  </seq>
+  
+
+</timesheet>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+	<!-- baseline: paralel videos -->
+	<par>
+		<item id="v1" select="#v1" />
+		<item id="v2" select="#v2"/>
+	</par>
+</timesheet>

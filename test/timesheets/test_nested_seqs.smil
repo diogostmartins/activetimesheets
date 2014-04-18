@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<timesheet xmlns="http://www.w3.org/ns/SMIL">
+  <!-- nested seqs -->
+  <seq>
+  	<item select="#v1" dur="10s"/>
+  	<item select="#v2" dur="20s"/>
+  	<seq>
+  		<item select="img" dur="5s"/>
+  	</seq>
+  </seq>
+  
+</timesheet>
