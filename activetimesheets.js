@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013 Diogo S. Martins <diogosm@icmc.usp.br>
+* Copyright (c) 2013-2014 Diogo S. Martins <diogosm@icmc.usp.br>
 * Intermidia Lab, Universidade de Sao Paulo, ICMC, Brazil
 * <http://intermidia.icmc.usp.br/>
 * 
@@ -7,7 +7,7 @@
 */
 
 /*
- * ActiveTimsheets engine
+ * ActiveTimesheets engine
  * Parsing and scheduling of a multimedia presentation in the ActiveTimesheets
  * language. ActiveTimesheets extends the SMIL Timesheets language with 
  * additional SMIL modules and a number of novel features.
