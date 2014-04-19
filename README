@@ -1,0 +1,8 @@
+ActiveTimesheets is a presentation engine for the SMIL Timesheets [1] language.
+Besides implementing the core features of this language, ActiveTimesheets 
+provides additional functionalities, such as DOM-based modifications in the
+timesheet document, extended reuse features and linking. 
+
+Refer to test/test_external_timesheets.html for an example of usage.
+
+
