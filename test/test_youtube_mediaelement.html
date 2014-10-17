@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Testing youtube support in ActiveTimesheets</title>
+	<link href="timesheets/youtube.xml" rel="timesheet" type="application/smil+xml">
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/simplelogger.js"></script>
+	<script type="text/javascript" src="js/mediafragments.js"></script>
+	<script type="text/javascript" src="../activetimesheets.js"></script>
+
+	<script type="text/javascript">
+	var logger = new Logger();
+
+	function setUp() {
+		$(ACTIVETIMESHEETS.engine).bind('presentation_ready', function () {
+			
+		});
+		logger.setMode('debug');
+		ACTIVETIMESHEETS.engine.start(logger);
+	}
+
+	$(function () {
+		setUp();
+	});
+	</script>
+</head>
+<body>
+
+<iframe id="laura" data-mediaelement="youtube" width="560" height="315" src="https://www.youtube.com/embed/4dAZq1Bw8cY?controls=0&showinfo=0&rel=0&disablekb=1&enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+<iframe id="deepweb" data-mediaelement="youtube" width="560" height="315" src="https://www.youtube.com/embed/_UOK7aRmUtw?controls=0&showinfo=0&rel=0&disablekb=1&enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+
+</body>
+</html>
