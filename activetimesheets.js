@@ -20,6 +20,14 @@
 
 ACTIVETIMESHEETS = {};
 
+ACTIVETIMESHEETS.conf = (function ($) {
+	var exports = {
+		'youtube.api': '//www.youtube.com/iframe_api'
+	};
+
+	return exports;
+})(jQuery);
+
 ACTIVETIMESHEETS.util = (function ($) {
 /**
 * utility libraries for the engine
@@ -38,7 +46,6 @@ exports.inherits = function(Parent, Child) {
 	Child.prototype = new TmpCtr();
 	Child._superClass = Parent.prototype;
 	Child.prototype.constructor = Child;
-
 }
 
 exports.TimegraphFormatter = function () {
@@ -278,7 +285,7 @@ return exports;
 ACTIVETIMESHEETS.engine  = (function ($) { /* begin module */
 /**
 * DOM API
-* Timegraph API
+* Timegraph Model
 * Timesheets parser
 * PresentationWrapper (public API)
 */
@@ -298,11 +305,11 @@ function reset() {
 	*/
 	// presentation = null; // wrapper for the timegraph
 	// node_id_idx = {};
-	flags = {};
-	// helper flags
-	flags.stalled_media_items = 0;
-	flags.metadata_unavailable = 0;
-	flags.timed_media = []; // keeps track of timed media in the presentation
+	flags = {
+		stalled_media_items: 0, 
+		unresolved_timed_media: 0, 
+		timed_media: [] // keeps track of timed media in the presentation
+	};
 	// unbind global events
 	$(document).unbind('media_stalled media_canplay implicit_duration_updated timing_resolved');
 }
@@ -1485,10 +1492,16 @@ function Parser() {
 			var wrapper_element = null;
 
 			if (/video|audio/i.test(target_node.nodeName)) {
-				target_element = new ContinuousMediaElement(id_generator++, 
+				// parse a continuous media element
+				target_element = new HTMLContinuousMediaElement(id_generator++, 
 					target_node);
-				flags.timed_media.push(target_node);
+			} else if (/iframe/i.test(target_node.nodeName) && 
+				$(target_node).attr('data-mediaelement') == 'youtube') {
+				// parse a youtube media element
+				target_element = new YouTubeMediaElement(id_generator++, 
+					target_node, $(target_node).data('yt_player'));
 			} else
+				// parse a discrete media element
 				target_element = new DiscreteMediaElement(id_generator++, target_node);
 			if (target_element !== null) {
 				var nested_elements = [];
@@ -1783,6 +1796,94 @@ function Parser() {
 		externalTimesheets();
 	}
 
+	this._checkContinuousMediaElements = function () {
+		/**
+		* a preliminary pass in the spatial document to check the types of 
+		* continuous media elements present, making sure the presentation is 
+		* unlocked only after their metadata is resolved
+		*/
+		var cm = $(document).find('audio,video,iframe[data-mediaelement=youtube]');
+		var wait_q_ht = [];
+		var wait_q_yt = [];
+		var TS = Date.now();
+		var POLL_INTERVAL = 50;
+		var TIMEOUT = 5000;
+
+		for (var i = 0; i < cm.length; i++) {
+			var el = cm[i];
+
+			if (/audio|video/i.test(el.nodeName)) {
+				if (el.readyState <= 1) {
+					$(el).data('ignore', false);
+					wait_q_ht.push(el);
+					flags.unresolved_timed_media++;
+				}
+			} else if (/iframe/i.test(el.nodeName)) {
+				wait_q_yt.push(el);
+				flags.unresolved_timed_media++;
+			}
+		}
+		// no continuous media elements
+		if (wait_q_yt + wait_q_ht == 0)
+			$(parser).trigger('media_elements_ready');
+		// youtube elements
+		if (wait_q_yt.length > 0) {
+			// dynamically load the youtube api (if needed) and register 
+			// the appropriate callbacks
+			window.onYouTubeIframeAPIReady = function () {
+				// TODO: register the player ready callback for every player 
+				// in the document (we have the list above)
+				for (var i = 0; i < wait_q_yt.length; i++) {
+					var player = new YT.Player($(wait_q_yt[i]).attr('id'), {
+						events: {
+							'onReady': onPlayerReady, 
+							'onError': onPlayerError
+						}
+					});
+				}
+				window.onYouTubeIframeAPIReady = function () {}; // no op
+			};
+			window.onPlayerReady = function (ev) {
+				var idx = wait_q_yt.indexOf(ev.target.a);
+
+				$(ev.target.a).data('yt_player', ev.target);
+				wait_q_yt.splice(idx,1);
+				flags.unresolved_timed_media--;
+				if (wait_q_yt.length == 0) {
+					window.onPlayerReady = function () {}; // no op
+					$(parser).trigger('media_elements_ready');
+				}
+			};
+			window.onPlayerError = function (ev) {
+				console.log('An error was detected on YouTube element', 
+					ev.target.a, '. Error code: ', ev.data);
+			};
+			if (typeof YT === "undefined")
+				$.getScript(ACTIVETIMESHEETS.conf['youtube.api']);
+		}
+		// html5 elements
+		if (wait_q_ht.length > 0) {
+			poller_id = setInterval(function () {
+				for (var i = 0; i < wait_q.length; i++) {
+					if (wait_q_ht[i].readyState > 1)
+						wait_q_ht.splice(i, 1);
+					if (wait_q_ht.length == 0)
+						clearInterval(poller_id);
+					else if (Date.now() - TS > TIMEOUT) {
+						for (var i = 0; i < wait_q.length; i++) {
+							console.log('Element', wait_q[i], 'is taking too', 
+								'long to yield meatadata. Ignoring it...');
+							$(wait_q[i]).data('ignore', true);
+							flags.unresolved_timed_media--;
+						}
+						clearInterval(poller_id);
+						$(parser).trigger('media_elements_ready');
+					}
+				}
+			}, POLL_INTERVAL);
+		}
+	};
+
 	/* public API */
 
 	this.parse = function () {
@@ -1792,6 +1893,16 @@ function Parser() {
 		* - call the timesheet parsing code for every timesheet node
 		* - binds the start of the parsing to the successful loading of the timesheets
 		*/
+		$(parser).bind('media_elements_ready', function (ev) {
+			/**
+			* parsing only proceeds when all continuous media elements
+			* have metadata
+			*/
+			logger.debug('media metadata ready. proceeding to timegraph', 
+						'computation');
+			timesheets();
+			$(this).unbind(ev);
+		});
 		$(parser).bind('timesheets_parsed', function (ev, data) {
 			var timegraph = data['timegraph'];
 			var dom_list = data['dom_list'];
@@ -1806,51 +1917,57 @@ function Parser() {
 						'timegraph': timegraph, 
 						'dom_list': dom_list
 					});
-					$(this).unbind(ev);
-				});
-				if (flags.timed_media.length > 0) {
-					var waiting = [];
-					var poller_id = null;
-
-					for (var i = 0; i < flags.timed_media.length; i++) {
-						// check for blocked elements
-						var element = flags.timed_media[i];
-
-						if (element.readyState <= 1)
-							waiting.push(element);
-					}
-					if (waiting.length > 0) {
-						logger.debug('waiting for media metadata before computing', 
-							'timegraph timing...');
-						poller_id = setInterval(function () {
-							// free the elements as they are unblocked
-							for (var i = 0; i < waiting.length; i++) 
-								if (waiting[i].readyState > 1)
-									waiting.splice(i,1);
-							if (waiting.length == 0) {
-								clearInterval(poller_id);
-								logger.debug('metadata ready by polling. proceeding', 
-									'to computation');
-								timegraph.computeTiming();
-								timegraph.updateFormatting(true);
-							}
-						}, 500);
-					} else {
-						timegraph.computeTiming();
-						timegraph.updateFormatting(true);
-					}
-				} else  {
 					timegraph.computeTiming();
 					timegraph.updateFormatting(true);
-				}
+					$(this).unbind(ev);
+				});
+				// if (flags.timed_media.length > 0) {
+				// 	var waiting = [];
+				// 	var poller_id = null;
+
+				// 	for (var i = 0; i < flags.timed_media.length; i++) {
+				// 		// check for blocked elements
+				// 		var element = flags.timed_media[i];
+
+				// 		if (element['type'] == 'html5' && element.readyState <= 1)
+				// 			waiting.push(element);
+				// 		else if (element['type'] == 'youtube')
+				// 	}
+				// 	if (waiting.length > 0) {
+				// 		logger.debug('waiting for media metadata before computing', 
+				// 			'timegraph timing...');
+				// 		poller_id = setInterval(function () {
+				// 			// free the elements as they are unblocked
+				// 			for (var i = 0; i < waiting.length; i++) 
+				// 				if (waiting[i].readyState > 1)
+				// 					waiting.splice(i,1);
+				// 			if (waiting.length == 0) {
+				// 				clearInterval(poller_id);
+				// 				logger.debug('metadata ready by polling. proceeding', 
+				// 					'to computation');
+				// 				timegraph.computeTiming();
+				// 				timegraph.updateFormatting(true);
+				// 			}
+				// 		}, 500);
+				// 	} else {
+				// 		timegraph.computeTiming();
+				// 		timegraph.updateFormatting(true);
+				// 	}
+				// } else  {
+				// 	timegraph.computeTiming();
+				// 	timegraph.updateFormatting(true);
+				// }
 			} else
 				logger.warn('No timesheet specification was associated to the', 
 					'current document.');
 			$(this).unbind(ev);
 		});
-		timesheets();
+		logger.debug('waiting for media metadata before computing', 
+					'timegraph timing...');
+		this._checkContinuousMediaElements();
 	}
 
+	/* methods for incremental parsing */
 	this.timesheet = timesheet;
 	this.timeElement = timeElement;
 	this.parseAttributes = parseAttributes;
@@ -1859,7 +1976,7 @@ function Parser() {
 }
 
 /**
-* Timegraph API
+* Timegraph Model
 */
 
 function Timer() {
@@ -3603,21 +3720,21 @@ DiscreteMediaElement.prototype.deactivate = function (skip_event) {
 		logger.debug('endEvent for', this, this._node_id, 'skipped');
 };
 
-function ContinuousMediaElement(__node_id, __target_node) {
+function HTMLContinuousMediaElement(__node_id, __target_node) {
 	/**
-	* Wrapper for HTML5MediaElement. 
+	* Wrapper for HTMLMediaElement. 
 	* Features: 
 	* - manages notification of explicit timing 
 	* - enforces clipping
 	*/
 	TimeElement.call(this, __node_id, __target_node);
 
-	this._SYNC_THRESHOLD = .5; // experimentally defined (s)
+	this._SYNC_THRESHOLD = .5; // experimentally defined (in seconds)
 }
 
-ACTIVETIMESHEETS.util.inherits(TimeElement, ContinuousMediaElement);
+ACTIVETIMESHEETS.util.inherits(TimeElement, HTMLContinuousMediaElement);
 
-ContinuousMediaElement.prototype._bindEvents = function() {
+HTMLContinuousMediaElement.prototype._bindEvents = function() {
 	var self = this;
 	var target = this._target_node;
 	var progress_ev = 'progress.' + this._node_id;
@@ -3643,7 +3760,7 @@ ContinuousMediaElement.prototype._bindEvents = function() {
 		return buffered;
 	};
 
-	ContinuousMediaElement._superClass._bindEvents.call(this);
+	HTMLContinuousMediaElement._superClass._bindEvents.call(this);
 
 	/**
 	* register stalling conditions, which are any or both of: 
@@ -3709,8 +3826,8 @@ ContinuousMediaElement.prototype._bindEvents = function() {
 	this._event_handlers[seeked_ev] = target;
 };
 
-ContinuousMediaElement.prototype.update = function() {
-	ContinuousMediaElement._superClass.update.call(this);
+HTMLContinuousMediaElement.prototype.update = function() {
+	HTMLContinuousMediaElement._superClass.update.call(this);
 	if (!this._target_node.paused && this._state == 'frozen')
 		this._target_node.pause();
 	else if (this._target_node.paused && this._state == 'playing')
@@ -3719,7 +3836,7 @@ ContinuousMediaElement.prototype.update = function() {
 	this._target_node.volume = this.getCascadedVolume();
 };
 
-ContinuousMediaElement.prototype._checkSyncError = function() {
+HTMLContinuousMediaElement.prototype._checkSyncError = function() {
 	/**
 	* check if there is a sync error in the media element 
 	* and attempt to correct by synchronizing the internal timer 
@@ -3746,48 +3863,48 @@ ContinuousMediaElement.prototype._checkSyncError = function() {
 	}
 };
 
-ContinuousMediaElement.prototype.computeTiming = function () {
+HTMLContinuousMediaElement.prototype.computeTiming = function () {
 	var self = this;
 	var target = this._target_node;
 
 	if (target.readyState > 0)
 		this._implicit_dur = this._target_node.duration;
-	ContinuousMediaElement._superClass.computeTiming.call(this);
+	HTMLContinuousMediaElement._superClass.computeTiming.call(this);
 	if (target.readyState > 0)
 		this._target_node.currentTime = this._time;
 };
 
-ContinuousMediaElement.prototype._reset = function () {
-	ContinuousMediaElement._superClass._reset.call(this);
+HTMLContinuousMediaElement.prototype._reset = function () {
+	HTMLContinuousMediaElement._superClass._reset.call(this);
 	this._target_node.currentTime = 0;
 };
 
-ContinuousMediaElement.prototype.pause = function () {
+HTMLContinuousMediaElement.prototype.pause = function () {
 	if (this.isPlaying()) {
-		ContinuousMediaElement._superClass.pause.call(this);
+		HTMLContinuousMediaElement._superClass.pause.call(this);
 		this._target_node.pause();
 	}
 };
 
-ContinuousMediaElement.prototype.play = function () {
+HTMLContinuousMediaElement.prototype.play = function () {
 	if (this.isPaused()) {
-		ContinuousMediaElement._superClass.play.call(this);
+		HTMLContinuousMediaElement._superClass.play.call(this);
 		this._target_node.play();
 	}
 };
 
-ContinuousMediaElement.prototype.seek = function () {
+HTMLContinuousMediaElement.prototype.seek = function () {
 	/**
 	* a seek operation started at some ancestor and propagated down 
 	* to this element. 
 	*/
-	ContinuousMediaElement._superClass.seek.call(this);
+	HTMLContinuousMediaElement._superClass.seek.call(this);
 	if (this._target_node.readyState > 0) {
 		this._target_node.currentTime = this._time;
 	} 
 };
 
-ContinuousMediaElement.prototype.activate = function () {
+HTMLContinuousMediaElement.prototype.activate = function () {
 	if (this.isActive())
 		return;
 
@@ -3797,7 +3914,7 @@ ContinuousMediaElement.prototype.activate = function () {
 		self._checkSyncError();
 	});
 
-	ContinuousMediaElement._superClass.activate.call(this);
+	HTMLContinuousMediaElement._superClass.activate.call(this);
 	if (this._target_node.readyState > 0)
 		this._target_node.currentTime = this._clipped_interval.begin;
 	this._target_node.play();
@@ -3805,14 +3922,14 @@ ContinuousMediaElement.prototype.activate = function () {
 	logger.debug('begin on', this, 'id:', this._node_id);
 };
 
-ContinuousMediaElement.prototype.deactivate = function (skip_event) {
+HTMLContinuousMediaElement.prototype.deactivate = function (skip_event) {
 	if (!this.isActive())
 		return;
 
 	var self = this;
 
 	$(this._target_node).unbind('timeupdate.syncerror');
-	ContinuousMediaElement._superClass.deactivate.call(this);
+	HTMLContinuousMediaElement._superClass.deactivate.call(this);
 	// XXX: apparently when ended=true, then the video refuses to rewind
 	// thw worse is that it's not deterministic
 	this._target_node.pause();
@@ -3825,9 +3942,150 @@ ContinuousMediaElement.prototype.deactivate = function (skip_event) {
 };
 
 
-ContinuousMediaElement.prototype.getType = function () {
+HTMLContinuousMediaElement.prototype.getType = function () {
 	return 'cm';
 };
+
+function YouTubeMediaElement(__node_id, __target_node, __yt_player) {
+	/**
+	* Wrapper for a YouTube video
+	*/
+	this._yt_player = __yt_player;
+	this._yt_player.isPaused = function () {
+		return this.getPlayerState() == YT.PlayerState.PAUSED;
+	};
+	TimeElement.call(this, __node_id, __target_node);
+}
+
+ACTIVETIMESHEETS.util.inherits(TimeElement, YouTubeMediaElement);
+
+YouTubeMediaElement.prototype._bindEvents = function () {
+	/**
+	* handlers for the state machine of a youtube player
+	*/ 
+	var stateChangeEv = 'yt_statechange_' + this._node_id;
+	var errorEv = 'yt_error_' + this._node_id;
+	var self = this;
+
+	window[stateChangeEv] = function (ev) {
+		if (ev['data'] == YT.PlayerState.BUFFERING) {
+			logger.debug('buffering for', self, self._node_id, 'ongoing...');
+			if (flags.stalled_media_items == 0 && presentation !== null) {
+				presentation.suspend();
+			}
+			self._state = 'stalled';
+			flags.stalled_media_items++;
+		} else if (ev['data'] == YT.PlayerState.PLAYING) {
+			if (self._state == 'stalled') {
+				logger.debug('buffering for', self, self._node_id, 'finished');
+				if (flags.stalled_media_items > 0)
+					flags.stalled_media_items--;
+				if (presentation !== null)
+					presentation.resume();
+				self._state = 'playing';
+			}
+		} else if (ev['data'] == YT.PlayerState.PAUSED) {
+			if (self._state == 'stalled') {
+				logger.debug('buffering for', self, self._node_id, 'finished');
+				if (flags.stalled_media_items > 0)
+					flags.stalled_media_items--;
+				if (presentation !== null)
+					presentation.resume();
+				self._state = 'paused';
+			}
+		}
+	};
+
+	window[errorEv] = function (ev) {};
+
+	this._yt_player.addEventListener('onStateChange', stateChangeEv);
+	this._yt_player.addEventListener('onError', errorEv);
+
+	this._event_handlers = [];
+	this._event_handlers.push(stateChangeEv);
+	this._event_handlers.push(errorEv);
+};
+
+YouTubeMediaElement.prototype.destroy = function () {
+	/**
+	* turn all event handlers into no-ops
+	*/
+	for (var i = 0; i < this._event_handlers.length; i++)
+		window[this._event_handlers[i]] = function () {};
+};
+
+YouTubeMediaElement.prototype.update = function () {
+	var cs = this.getCascadedSpeed();
+	var cv = this.getCascadedVolume();
+
+	YouTubeMediaElement._superClass.update.call(this);
+	if (this._yt_player.isPaused() && this._state == 'frozen')
+		this._yt_player.pauseVideo();
+	else if (this._yt_player.isPaused() == YT.PlayerState.PAUSED)
+		this._yt_player.playVideo();
+	this._yt_player.setPlaybackRate(this.getCascadedSpeed());
+	this._yt_player.setVolume(this.getCascadedVolume()*100);
+};
+
+YouTubeMediaElement.prototype.computeTiming = function () {
+	this._implicit_dur = this._yt_player.getDuration();
+	YouTubeMediaElement._superClass.computeTiming.call(this);
+	this._yt_player.seekTo(this._time);
+};
+
+YouTubeMediaElement.prototype._reset = function () {
+	YouTubeMediaElement._superClass._reset.call(this);
+	this._yt_player.seekTo(0);
+	this._yt_player.stopVideo();
+};
+
+YouTubeMediaElement.prototype.pause = function () {
+	if (this.isPlaying()) {
+		YouTubeMediaElement._superClass.pause.call(this);
+		this._yt_player.pauseVideo();
+	}
+};
+
+
+YouTubeMediaElement.prototype.play = function () {
+	if (this.isPaused()) {
+		YouTubeMediaElement._superClass.play.call(this);
+		this._yt_player.playVideo();
+	}
+};
+
+YouTubeMediaElement.prototype.seek = function () {
+	YouTubeMediaElement._superClass.seek.call(this);
+	this._yt_player.seekTo(this._time);
+};
+
+YouTubeMediaElement.prototype.activate = function () {
+	if (!this.isActive()) {
+		var self = this;
+		
+		YouTubeMediaElement._superClass.activate.call(this);
+		this._yt_player.seekTo(this._clipped_interval.begin);
+		this._yt_player.playVideo();
+		$(this).trigger('beginEvent', {'node_id': this._node_id});
+		logger.debug('begin on', this, 'id:', this._node_id);
+	}
+};
+
+YouTubeMediaElement.prototype.deactivate = function (skip_event) {
+	YouTubeMediaElement._superClass.deactivate.call(this);
+	this._yt_player.pauseVideo();
+	this._yt_player.seekTo(this._clipped_interval.begin);
+	logger.debug('end on', this, 'id:', this._node_id);
+	if (!skip_event)
+		$(this).trigger('endEvent', {'node_id': this._node_id});
+	else
+		logger.debug('endEvent for', this, this._node_id, 'skipped');
+};
+
+YouTubeMediaElement.prototype.getType = function () {
+	return 'yt';
+};
+
 
 /* PUBLIC API */
 
@@ -3844,10 +4102,9 @@ function PresentationWrapper(__timegraph, __dom_list) {
 	this._updating = false;
 	this._timegraph = __timegraph;
 	this._dom_list = __dom_list;
-	this._suspended = false;
 	this._timerate = 40;
 	this._timer_id = null;
-
+	this._state = 'idle'; // 'idle' || 'suspended' || 'playing' || 'paused' || 'stopped'
 
 	this.play = function () {
 		if (this.isSuspended())
@@ -3857,11 +4114,13 @@ function PresentationWrapper(__timegraph, __dom_list) {
 			this._registerTimerUpdate();
 			this._timer.play();
 			this._timegraph.play();
+			this._state = 'playing';
 			logger.debug('presentation playing from paused');
-		} else if (this.isIdle()) {
+		} else if (this.isIdle() || this.isStopped()) {
 			logger.timer.play();
 			this._registerTimerUpdate();
 			this._timer.play();
+			this._state = 'playing';
 			this._timegraph.activate();
 			logger.debug('presentation playing from idle');
 		}
@@ -3878,13 +4137,12 @@ function PresentationWrapper(__timegraph, __dom_list) {
 	};
 
 	this.pause = function () {
-		if (this.isSuspended())
-			return;
 		if (this.isPlaying()) {
 			logger.timer.pause();
 			this._unregisterTimerUpdate();
 			this._timer.pause();
 			this._timegraph.pause();
+			this._state = 'paused';
 			logger.debug('presentation paused');
 		}
 	};
@@ -3892,7 +4150,7 @@ function PresentationWrapper(__timegraph, __dom_list) {
 	this.suspend = function () {
 		if (this.isPlaying()) {
 			this.pause();
-			this._suspended = true;
+			this._state = 'suspended';
 			$(this).trigger('suspended');
 			logger.debug('presentation suspended');
 		}
@@ -3900,7 +4158,7 @@ function PresentationWrapper(__timegraph, __dom_list) {
 
 	this.resume = function () {
 		if (this.isSuspended()) {
-			this._suspended = false;
+			this._state = 'playing';
 			this.play();
 			$(this).trigger('resumed');
 			logger.debug('presentation resumed');
@@ -3912,6 +4170,7 @@ function PresentationWrapper(__timegraph, __dom_list) {
 		this._unregisterTimerUpdate();
 		this._timer.stop();
 		this._timegraph.deactivate();
+		this._state = 'stopped';
 		logger.debug('presentation stopped');
 	};
 
@@ -3966,19 +4225,23 @@ function PresentationWrapper(__timegraph, __dom_list) {
 	};
 
 	this.isPaused = function () {
-		return this._timer.isPaused();
+		return this._state == 'paused';
 	};
 
 	this.isPlaying = function () {
-		return this._timer.isPlaying();
+		return this._state == 'playing';
 	};
 
 	this.isSuspended = function () {
-		return this._suspended;
+		return this._state == 'suspended';
 	};
 
 	this.isIdle = function () {
-		return this._timer.isIdle();
+		return this._state == 'idle';
+	};
+
+	this.isStopped = function () {
+		return this._state == 'stopped';
 	};
 
 	this.getTime = function () {
