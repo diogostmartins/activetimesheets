@@ -1,3 +1,5 @@
+NOTICE: this project has moved to: https://bitbucket.org/diogo_martins/activetimesheets
+
 ActiveTimesheets is a presentation engine for the SMIL Timesheets [1] language.
 Besides implementing the core features of this language, ActiveTimesheets 
 provides additional functionalities, such as DOM-based modifications in the
